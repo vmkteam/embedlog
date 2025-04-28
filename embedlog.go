@@ -118,7 +118,7 @@ func NewDevLogger() Logger {
 
 // NewLogger returns new Logger wrapper for slog.
 // verbose sets [slog.LevelInfo] instead of  [slog.LevelError].
-// isJson uses [slog.SONHandler] instead of [slog.TextHandler].
+// isJson uses [slog.JSONHandler] instead of [slog.TextHandler].
 func NewLogger(verbose, isJson bool) Logger {
 	// set Level
 	level := slog.LevelError
@@ -211,8 +211,8 @@ func (l Logger) Log() *slog.Logger {
 	return l.slog
 }
 
-// logCtx is an example of a user-defined logging function that wraps slog.
-// The log record contains the source position of the caller of Infof/Errorf.
+// logCtx is logging function that wraps slog.
+// The log record contains the source position of the caller of Infof/Errorf and increase Prometheus counter metrics.
 func (l Logger) logCtx(ctx context.Context, level slog.Level, msg string, args ...any) {
 	if l.slog == nil {
 		return

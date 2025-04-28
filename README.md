@@ -1,5 +1,9 @@
 # embedlog
 
+[![Linter Status](https://github.com/vmkteam/cron/actions/workflows/golangci-lint.yml/badge.svg?branch=master)](https://github.com/vmkteam/cron/actions)
+[![Go Report Card](https://goreportcard.com/badge/github.com/vmkteam/cron)](https://goreportcard.com/report/github.com/vmkteam/cron)
+[![Go Reference](https://pkg.go.dev/badge/github.com/vmkteam/cron.svg)](https://pkg.go.dev/github.com/vmkteam/cron)
+
 Enhanced logging library for Go with Prometheus metrics integration and structured logging capabilities.
 
 ### Features
@@ -26,6 +30,6 @@ Use these metrics to set up alerts for error rate spikes.
 * For error tracking: Monitor `app_log_events_total{type="error"}`
 
 ### Quick Start
-
+Please, see:
 * `examples/main.go` for basic usage.
 * `examples/dblog.go` for go-pg usage.
