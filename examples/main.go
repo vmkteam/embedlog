@@ -38,7 +38,7 @@ type MyManager struct {
 	embedlog.Logger
 }
 
-// NewMyManager returns NewLogger manager
+// NewMyManager returns NewLogger manager.
 func NewMyManager(logger embedlog.Logger) *MyManager {
 	return &MyManager{
 		Logger: logger,
@@ -60,6 +60,7 @@ func (mm MyManager) Sample(ctx context.Context) {
 	lg := mm.With("id", id)
 
 	var err error
+	//nolint:gosec // tests
 	if rand.IntN(2) == 1 {
 		err = errors.New("random err")
 		rows = 0
@@ -76,15 +77,15 @@ func (mm MyManager) Sample(ctx context.Context) {
 
 var (
 	flVerbose = flag.Bool("verbose", true, "print verbose output")
-	flJson    = flag.Bool("json", false, "print output as JSON")
+	flJSON    = flag.Bool("json", false, "print output as JSON")
 	flDev     = flag.Bool("dev", false, "uses development mode")
 )
 
 func main() {
 	flag.Parse()
-	verbose, isJson, ctx := *flVerbose, *flJson, context.Background()
+	verbose, isJSON, ctx := *flVerbose, *flJSON, context.Background()
 
-	l := embedlog.NewLogger(verbose, isJson)
+	l := embedlog.NewLogger(verbose, isJSON)
 	if *flDev {
 		l = embedlog.NewDevLogger()
 	}
@@ -92,7 +93,7 @@ func main() {
 
 	// goroutine test
 	go func() {
-		l3 := embedlog.NewLogger(verbose, isJson)
+		l3 := embedlog.NewLogger(verbose, isJSON)
 		l3.Print(context.Background(), "l3 test", "token", Token("Secret"))
 	}()
 
@@ -106,7 +107,7 @@ func main() {
 	slog.Info("this is default logger", "time", time.Now())
 
 	// use group
-	l2 := l.With("verbose", verbose, "isJson", isJson, ManagerModeV2.Attr())
+	l2 := l.With("verbose", verbose, "isJSON", isJSON, ManagerModeV2.Attr())
 	m2 := NewMyManager(l2)
 	m2.Run(ctx)
 
@@ -124,6 +125,7 @@ func main() {
 	l2.WithGroup("l2").Print(ctx, "test l2 group", "v2", true, slog.Bool("test", true))
 
 	// check metrics
+	//nolint:gosec // tests
 	err := http.ListenAndServe(":2112", nil)
 	l.Errorf("err=%v", err)
 }
