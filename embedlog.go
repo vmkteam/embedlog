@@ -2,11 +2,13 @@ package embedlog
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
 	"os"
 	"path"
+	"reflect"
 	"runtime"
 	"time"
 
@@ -33,12 +35,12 @@ type splitLevelHandler struct {
 }
 
 // newSplitLevelHandler returns new splitLevel handlers by stdout and stderr.
-func newSplitLevelHandler(stdout, stderr io.Writer, opts *slog.HandlerOptions, isJson bool) *splitLevelHandler {
+func newSplitLevelHandler(stdout, stderr io.Writer, opts *slog.HandlerOptions, isJSON bool) *splitLevelHandler {
 	if opts == nil {
 		opts = &slog.HandlerOptions{}
 	}
 
-	if isJson {
+	if isJSON {
 		return &splitLevelHandler{
 			out: slog.NewJSONHandler(stdout, opts),
 			err: slog.NewJSONHandler(stderr, opts),
@@ -56,7 +58,7 @@ func (h *splitLevelHandler) Enabled(ctx context.Context, level slog.Level) bool 
 	return h.out.Enabled(ctx, level) || h.err.Enabled(ctx, level)
 }
 
-// Handle methods that produce output should observe the following rules in [slog.Handler]
+// Handle methods that produce output should observe the following rules in [slog.Handler].
 func (h *splitLevelHandler) Handle(ctx context.Context, r slog.Record) error {
 	if r.Level >= slog.LevelError {
 		return h.err.Handle(ctx, r)
@@ -96,18 +98,23 @@ func NewDevLogger() Logger {
 			ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
 				// colorize errors
 				if err, ok := a.Value.Any().(error); ok {
-					aErr := tint.Err(err)
-					aErr.Key = a.Key
-					return aErr
+					if reflect.ValueOf(err).IsValid() && !reflect.ValueOf(err).IsNil() {
+						aErr := tint.Err(err)
+						aErr.Key = a.Key
+						return aErr
+					}
 				}
 
 				// show source
 				if a.Key == slog.SourceKey {
 					var file string
-					s := a.Value.Any().(*slog.Source)
+					s, _ := a.Value.Any().(*slog.Source)
 					file = fmt.Sprintf("%s:%d", path.Base(s.File), s.Line)
-					s = nil
 					a = slog.String("@source", file+"\t | ")
+				}
+
+				if v, ok := a.Value.Any().(json.RawMessage); ok {
+					a.Value = slog.StringValue(string(v))
 				}
 
 				return a
@@ -119,7 +126,7 @@ func NewDevLogger() Logger {
 // NewLogger returns new Logger wrapper for slog.
 // verbose sets [slog.LevelInfo] instead of  [slog.LevelError].
 // isJson uses [slog.JSONHandler] instead of [slog.TextHandler].
-func NewLogger(verbose, isJson bool) Logger {
+func NewLogger(verbose, isJSON bool) Logger {
 	// set Level
 	level := slog.LevelError
 	if verbose {
@@ -132,13 +139,12 @@ func NewLogger(verbose, isJson bool) Logger {
 		ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
 			if a.Key == slog.SourceKey {
 				var file string
-				s := a.Value.Any().(*slog.Source)
+				s, _ := a.Value.Any().(*slog.Source)
 				file = fmt.Sprintf("%s:%d", path.Base(s.File), s.Line)
-				s = nil
 				a = slog.String("@source", file)
 			}
 
-			if !isJson && a.Key == slog.TimeKey {
+			if !isJSON && a.Key == slog.TimeKey {
 				t := a.Value.Time().Format(time.DateTime)
 				a.Value = slog.StringValue(t)
 			}
@@ -148,7 +154,7 @@ func NewLogger(verbose, isJson bool) Logger {
 	}
 
 	return Logger{
-		slog: slog.New(newSplitLevelHandler(os.Stdout, os.Stderr, opts, isJson)),
+		slog: slog.New(newSplitLevelHandler(os.Stdout, os.Stderr, opts, isJSON)),
 	}
 }
 
@@ -222,15 +228,8 @@ func (l Logger) logCtx(ctx context.Context, level slog.Level, msg string, args .
 		return
 	}
 
-	// inc stat for info/error. We don't use slog.Level.String() due to upper case.
-	if statEvents != nil {
-		switch level {
-		case slog.LevelInfo:
-			statEvents.WithLabelValues("info").Inc()
-		case slog.LevelError:
-			statEvents.WithLabelValues("error").Inc()
-		}
-	}
+	// inc stat for level.
+	statEvents.WithLabelValues(level.String()).Inc()
 
 	// set correct file and line, handle
 	var pcs [1]uintptr

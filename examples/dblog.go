@@ -23,9 +23,10 @@ func (ql QueryLogger) BeforeQuery(ctx context.Context, event *pg.QueryEvent) (co
 }
 
 func (ql QueryLogger) AfterQuery(ctx context.Context, event *pg.QueryEvent) error {
+	method := fmt.Sprintf("%s.%s", zenrpc.NamespaceFromContext(ctx), zm.MethodFromContext(ctx))
 	query, err := event.FormattedQuery()
 	if err != nil {
-		ql.Error(ctx, string(query), "err", err, "params", event.Params)
+		ql.Error(ctx, string(query), "err", err, "rpc", method)
 	}
 
 	var since time.Duration
@@ -37,7 +38,7 @@ func (ql QueryLogger) AfterQuery(ctx context.Context, event *pg.QueryEvent) erro
 		}
 	}
 
-	ql.Print(ctx, string(query), "params", event.Params, "duration", since)
+	ql.Log().DebugContext(ctx, string(query), "rpc", method, "duration", since)
 	return nil
 }
 
