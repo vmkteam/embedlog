@@ -2,11 +2,13 @@ package embedlog
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
 	"os"
 	"path"
+	"reflect"
 	"runtime"
 	"time"
 
@@ -96,9 +98,11 @@ func NewDevLogger() Logger {
 			ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
 				// colorize errors
 				if err, ok := a.Value.Any().(error); ok {
-					aErr := tint.Err(err)
-					aErr.Key = a.Key
-					return aErr
+					if reflect.ValueOf(err).IsValid() && !reflect.ValueOf(err).IsNil() {
+						aErr := tint.Err(err)
+						aErr.Key = a.Key
+						return aErr
+					}
 				}
 
 				// show source
@@ -107,6 +111,10 @@ func NewDevLogger() Logger {
 					s, _ := a.Value.Any().(*slog.Source)
 					file = fmt.Sprintf("%s:%d", path.Base(s.File), s.Line)
 					a = slog.String("@source", file+"\t | ")
+				}
+
+				if v, ok := a.Value.Any().(json.RawMessage); ok {
+					a.Value = slog.StringValue(string(v))
 				}
 
 				return a
