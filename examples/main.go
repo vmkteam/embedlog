@@ -9,8 +9,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vmkteam/embedlog"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type Token string

@@ -363,10 +363,10 @@ linters:
       # Default: false
       os-temp-dir: true
 
-    exclusions:
+  exclusions:
       # Log a warning if an exclusion rule is unused.
       # Default: false
-      warn-unused: true
+      warn-unused: false
       # Predefined exclusion rules.
       # Default: []
       presets:
@@ -396,3 +396,17 @@ linters:
             - gosec
             - noctx
             - wrapcheck
+
+formatters:
+  enable:
+    - gci
+  settings:
+    gci:
+      sections:
+        - standard
+        - localmodule
+        - default
+      no-inline-comments: true
+      no-prefix-comments: true
+      custom-order: true
+      no-lex-order: true
