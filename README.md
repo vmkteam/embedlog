@@ -1,8 +1,8 @@
 # embedlog
 
-[![Linter Status](https://github.com/vmkteam/cron/actions/workflows/golangci-lint.yml/badge.svg?branch=master)](https://github.com/vmkteam/cron/actions)
-[![Go Report Card](https://goreportcard.com/badge/github.com/vmkteam/cron)](https://goreportcard.com/report/github.com/vmkteam/cron)
-[![Go Reference](https://pkg.go.dev/badge/github.com/vmkteam/cron.svg)](https://pkg.go.dev/github.com/vmkteam/cron)
+[![Linter Status](https://github.com/vmkteam/embedlog/actions/workflows/golangci-lint.yml/badge.svg?branch=master)](https://github.com/vmkteam/embedlog/actions)
+[![Go Report Card](https://goreportcard.com/badge/github.com/vmkteam/embedlog)](https://goreportcard.com/report/github.com/vmkteam/embedlog)
+[![Go Reference](https://pkg.go.dev/badge/github.com/vmkteam/embedlog.svg)](https://pkg.go.dev/github.com/vmkteam/embedlog)
 
 Enhanced logging library for Go with Prometheus metrics integration and structured logging capabilities.
 
