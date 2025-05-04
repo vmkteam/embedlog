@@ -98,7 +98,7 @@ func NewDevLogger() Logger {
 			ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
 				// colorize errors
 				if err, ok := a.Value.Any().(error); ok {
-					if reflect.ValueOf(err).IsValid() && !reflect.ValueOf(err).IsNil() {
+					if reflect.ValueOf(err).IsValid() && !isNil(a.Value) {
 						aErr := tint.Err(err)
 						aErr.Key = a.Key
 						return aErr
@@ -155,6 +155,21 @@ func NewLogger(verbose, isJSON bool) Logger {
 
 	return Logger{
 		slog: slog.New(newSplitLevelHandler(os.Stdout, os.Stderr, opts, isJSON)),
+	}
+}
+
+// isNul checks for nil interface.
+func isNil(i any) bool {
+	if i == nil {
+		return true
+	}
+
+	//nolint:exhaustive // we need to check only this types
+	switch reflect.TypeOf(i).Kind() {
+	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+		return reflect.ValueOf(i).IsNil()
+	default:
+		return false
 	}
 }
 
