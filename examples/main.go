@@ -105,8 +105,7 @@ func main() {
 	m.Sample(ctx)
 
 	// test default slog
-	slog.Info("this is default logger", "time", time.Now())
-
+	slog.Info("this is default logger", "time", time.Now(), slog.String("source", "file"))
 	// use group
 	l2 := l.With("verbose", verbose, "isJSON", isJSON, ManagerModeV2.Attr())
 	m2 := NewMyManager(l2)
